@@ -1,10 +1,11 @@
-#pragma once
-#include <string>
-#include <vector>
-#include <fstream>
+#ifndef __TOKEN_H
+#define __TOKEN_H
+#include "LiteralType.hpp"
 
 namespace Lox {
 
+    #define type_name(type) (#type)
+    
     enum class TokenType {
         // Single-character tokens
         LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -27,21 +28,19 @@ namespace Lox {
         FILE_EOF
     };
 
+
     class Token {
-        Lox::TokenType type;
+        TokenType type;
         std::string lexeme;
-        std::any literal;
+        LiteralType literal;
         int line;
 
         public:
-            Token(TokenType tokenType, std::string lexeme, std::any literal, int line);
-            friend std::ostream& operator<<(std::ostream& os, const Token& t);
+            Token(TokenType tokenType, std::string lexeme, LiteralType literal, int line);
+            friend std::ostream& operator<<(std::ostream& os, const Token& token);
+            void* getLiteralValue();
     };
 
-    class Scanner {
-        public:
-            Scanner(const std::string& source);
-            
-            std::vector<Token> scanTokens();
-    };
-}
+};
+
+#endif // __TOKEN_H
