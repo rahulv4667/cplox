@@ -10,7 +10,7 @@ namespace Lox{
         
         Lox::Scanner scanner(program);
         std::vector<Lox::Token> tokens = scanner.scanTokens();
-
+        std::cout<<"Total number of tokens:"<<tokens.size()<<std::endl;
         for(Token token: tokens) {
             std::cout<<token<<std::endl;
         }

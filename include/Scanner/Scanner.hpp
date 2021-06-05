@@ -1,9 +1,12 @@
-#pragma once
+#ifndef __SCANNER_H
+#define __SCANNER_H
+
 #include <string>
 #include <vector>
 #include <fstream>
 #include <variant>
-#include "Scanner/Token.hpp"
+#include <map>
+#include <Scanner/Token.hpp>
 
 namespace Lox {
 
@@ -12,6 +15,8 @@ namespace Lox {
             std::string source;
             std::vector<Token> tokens;
 
+            static std::map<std::string, TokenType> keywords;
+            static std::map<std::string, TokenType> create_keywords();
             /**
              * `start` and `current` fields are offsets that index to the string.
              * `start` field points to the first character in lexeme being scanned
@@ -27,8 +32,17 @@ namespace Lox {
 
             bool isAtEnd();
             void scanToken();
+            bool match(char expected);
 
+            char peek();
             char advance();
+            char peekNext();
+            void readNumber();
+            void readString();
+            void readIdentifier();
+            bool isDigit(char c);
+            bool isAlpha(char c);
+            bool isAlphaNumeric(char c);
             void addToken(TokenType type);
             void addToken(TokenType type, LiteralType literal);
         public:
@@ -36,3 +50,6 @@ namespace Lox {
             std::vector<Token> scanTokens();
     };
 }
+
+
+#endif // __SCANNER_H

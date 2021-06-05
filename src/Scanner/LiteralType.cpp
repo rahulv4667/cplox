@@ -2,7 +2,9 @@
 
 namespace Lox {
 
-
+    LiteralType::LiteralType() {}
+    LiteralType::LiteralType(const std::string& value): value(value) {}
+    LiteralType::LiteralType(double d): value(d) {}
 
     void LiteralType::operator=(const LiteralType& literal) {
         this->value = literal.value;

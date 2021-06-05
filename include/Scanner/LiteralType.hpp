@@ -9,6 +9,10 @@ namespace Lox {
     class LiteralType {
         public:
             std::variant<double, std::string> value;
+
+            LiteralType();
+            LiteralType(const std::string& value);
+            LiteralType(double d);
             void operator=(const LiteralType& value);
             friend std::ostream& operator<<(std::ostream& os, const LiteralType& literal);
     };

@@ -27,6 +27,7 @@ namespace Lox {
 
         FILE_EOF
     };
+    std::ostream& operator<<(std::ostream& os, const TokenType token);
 
 
     class Token {
