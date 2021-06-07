@@ -2,3 +2,7 @@ out/**
 .vscode
 a.out
 build/**
+bin/**
+obj/**
+Makefile
+*.make 
