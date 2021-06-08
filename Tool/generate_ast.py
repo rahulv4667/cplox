@@ -2,6 +2,10 @@ import sys
 import os
 
 
+def template_str(c: str = 'T'):
+    return f'template<typename {c}>'
+
+
 def initialize_params(src_lines: list, params: str):
     comma_sep_params = params.split(',')
     for param in comma_sep_params:
@@ -20,18 +24,74 @@ def define_params(header_lines: list, class_name: str, params: str):
 
 
 def define_subtypes(header_lines: list, base_name: str, types: list):
+    header_lines.append('\t\tpublic:')
     for type in types:
         [class_name, params] = type.split(':')
-        header_lines.append(f'\t\tclass {class_name};')
+        class_name = class_name.strip()
+        header_lines.append(f'\t\t\tclass {class_name};')
 
+def define_const_dest(header_lines: list, base_name:str):
     # adding public destructor
     header_lines.append('\t\tpublic:')
     header_lines.append(f'\t\t\tvirtual ~{base_name}() = default;')
 
     # adding private constructor to make the class virtual
     # without having additional methods.
-    header_lines.append('\t\tprivate:')
+    header_lines.append('\t\tprotected:')
     header_lines.append(f'\t\t\t{base_name}() = default;')
+
+def define_each_subtype(header_lines: list, base_name: str, types: list):
+    for type in types:
+        [class_name, params] = type.split(':')
+        class_name = class_name.strip()
+
+        # starting subtype class
+        header_lines.append(f'\tclass {base_name}::{class_name} : public {base_name} {{')
+        define_params(header_lines, class_name, params)
+
+        # define subtype constructor
+        header_lines.append('\t\tpublic:')
+        header_lines.append(f'\t\t\t{class_name}({params});')
+        header_lines.append(f'\n\t\t\t{template_str()}')
+        header_lines.append(f'\t\t\tT accept(Visitor<T> visitor) override;')
+
+        header_lines.append('\t};\n')
+
+def define_visitor_hpp(header_lines: list, base_name: str, types: list):
+    header_lines.append(f'\t{template_str()}')
+    header_lines.append(f'\tclass {base_name}::Visitor {{')
+    header_lines.append(f'\t\tpublic:')
+    for type in types:
+        [class_name, _] = type.split(':')
+        class_name = class_name.strip()
+        header_lines.append(f'\t\t\tvirtual T visit({base_name}::{class_name}& {class_name.lower()});')
+    header_lines.append('\t};\n')
+
+
+def define_visitor_in_class(header_lines: list, base_name: str, types: list):
+    header_lines.append('\t\tpublic:')
+    header_lines.append(f'\t\t\t{template_str()}')
+    header_lines.append(f'\t\t\tclass Visitor;')
+    header_lines.append(f'\t\t\t{template_str()}')
+    header_lines.append(f'\t\t\tT accept(Visitor<T> visitor);')
+
+
+def implement_subtypes(src_lines: list, base_name: str, types: list):
+    for type in types:
+        [class_name, params] = type.split(':')
+        class_name = class_name.strip()
+
+        # constructor
+        src_lines.append(f'\t{base_name}::{class_name}::{class_name}({params}) : ')
+        initialize_params(src_lines, params)
+        src_lines.append('\t {}\n')
+
+        # accept method
+        src_lines.append(f'\t{template_str()}')
+        src_lines.append(f'\tT {base_name}::{class_name}::accept(Visitor<T> visitor) {{')
+        src_lines.append(f'\t\treturn visitor.visit(*this);')
+        src_lines.append(f'\t}}\n')
+
 
 def define_ast(header_dir: str, src_dir: str, base_name: str, types: list):
     try:
@@ -52,33 +112,25 @@ def define_ast(header_dir: str, src_dir: str, base_name: str, types: list):
         # starting base class
         header_lines.append(f'\tclass {base_name} {{')
         define_subtypes(header_lines, base_name, types)
+        define_const_dest(header_lines=header_lines, base_name=base_name)
+
+        # declaring visitor inside base class
+        define_visitor_in_class(header_lines, base_name, types)
         
         #closing base class
         header_lines.append('\t};\n')
 
         # defining class for each subtype.
-        for type in types:
-            [class_name, params] = type.split(':')
-            
-            # starting subtype class
-            header_lines.append(f'\tclass {base_name}::{class_name} : public {base_name} {{')
-            define_params(header_lines, class_name, params)
+        define_each_subtype(header_lines=header_lines, base_name=base_name, types=types)
 
-            # define subtype constructor
-            header_lines.append(f'\t\t{class_name}({params});')
+        # defining visitor class in hpp
+        define_visitor_hpp(header_lines, base_name, types)
 
-            header_lines.append('\t};\n')
 
         ##############################
         ####### Defining src #########
         ##############################
-        for type in types:
-            [class_name, params] = type.split(':')
-
-            src_lines.append(f'\t{base_name}::{class_name}::{class_name}({params}) : ')
-            initialize_params(src_lines, params)
-            src_lines.append('\t {}')
-
+        implement_subtypes(src_lines, base_name, types)
 
         # closing namespace
         header_lines.append('\t}')

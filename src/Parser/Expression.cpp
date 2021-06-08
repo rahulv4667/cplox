@@ -8,6 +8,12 @@ namespace Lox {
         right(right)
     {}
 
-    
+    // template<typename T>
+    // T Expression::accept(Visitor<T> v) {}
+
+    template<typename T>
+    T Expression::Binary::accept(Visitor<T> v) {
+        return v.visit(*this);
+    }
 
 };

@@ -6,9 +6,16 @@
 namespace Lox {
 
     class Expression {
+
+        template<typename T>
+        class Visitor;
+
         class Binary;
         public:
             virtual ~Expression() = default;
+
+            template<typename T>
+            T accept(Visitor<T> visitor);
         private:
             Expression() = default;
     };
@@ -18,6 +25,15 @@ namespace Lox {
         Expression right;
         Token oprtr;
         Binary(Expression left, Token oprtr, Expression right);
+
+        template<typename T>
+        T accept(Visitor<T> visitor) override;
+    };
+
+    template<typename T>
+    class Expression::Visitor {
+        public: 
+            virtual T visit(Binary& b);
     };
 
 }

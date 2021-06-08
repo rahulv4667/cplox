@@ -3,6 +3,8 @@
 #include <string>
 #include <Scanner/Scanner.hpp>
 #include <Error/Error.hpp>
+#include <Parser/Expr.hpp>
+#include "src/Parser/AstPrinter.cpp"
 
 namespace Lox{
 
@@ -60,12 +62,23 @@ namespace Lox{
 };
 
 int main(int argc, char **argv) {
-    if(argc > 2) {
-        std::cout<<"Usage: ./cplox [script]"<<std::endl;
-        exit(EXIT_FAILURE);
-    } else if(argc==2) {
-        Lox::runFile(argv);
-    } else {
-        Lox::runPrompt();
-    }
+    // if(argc > 2) {
+    //     std::cout<<"Usage: ./cplox [script]"<<std::endl;
+    //     exit(EXIT_FAILURE);
+    // } else if(argc==2) {
+    //     Lox::runFile(argv);
+    // } else {
+    //     Lox::runPrompt();
+    // }
+
+    Lox::Expr::Binary expression(
+        Lox::Expr::Unary(Lox::Token(Lox::TokenType::MINUS, "-", {}, 1),
+                        Lox::Expr::Literal(123)),
+        Lox::Token(Lox::TokenType::STAR, "*", {}, 1),
+        Lox::Expr::Grouping(Lox::Expr::Literal(45.67))
+    );
+
+    auto ast = Lox::AstPrinter<void>();
+    ast.print(expression);
+    std::cout<<(new Lox::AstPrinter())->print(&expression);
 }

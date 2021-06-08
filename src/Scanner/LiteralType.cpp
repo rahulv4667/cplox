@@ -1,5 +1,5 @@
 #include <Scanner/LiteralType.hpp>
-
+#include <sstream>
 namespace Lox {
 
     LiteralType::LiteralType() {}
@@ -28,6 +28,14 @@ namespace Lox {
         return os;
     }
 
+    bool LiteralType::isNull() {
+        return (this->value).valueless_by_exception();
+    }
 
+    std::string LiteralType::toString() {
+        std::stringstream ss;
+        ss<<(*this); // works coz we have overloaded operator<<
+        return ss.str();
+    }
 
 };

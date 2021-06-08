@@ -14,6 +14,8 @@ namespace Lox {
             LiteralType(const std::string& value);
             LiteralType(double d);
             void operator=(const LiteralType& value);
+            bool isNull();
+            std::string toString();
             friend std::ostream& operator<<(std::ostream& os, const LiteralType& literal);
     };
 
